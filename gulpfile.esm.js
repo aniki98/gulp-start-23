@@ -83,7 +83,7 @@ function watching() {
         },
         notify: false
     });
-    watch('app/scss/style.scss', styles);
+    watch('app/scss/*.scss', styles);
     watch('app/js/main.js', scripts);
     watch('app/images/src', images);
     watch('app/**/*.html').on('change', browserSync.reload);
