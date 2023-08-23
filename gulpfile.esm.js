@@ -15,6 +15,9 @@ import imagemin from 'gulp-imagemin';
 import newer from 'gulp-newer';
 
 import svgSprite from 'gulp-svg-sprite';
+import svgmin from 'gulp-svgmin';
+import cheerio from 'gulp-cheerio';
+import replace from 'gulp-replace';
 
 import ttf2woff2 from 'gulp-ttf2woff2';
 import fonter from 'gulp-fonter-2';
@@ -45,19 +48,47 @@ function images() {
         .pipe(newer('app/images/dist'))
         .pipe(webp({quality: 75}))
 
-        .pipe(src(['app/images/src/**/*.png', 'app/images/src/**/*.jpg', 'app/images/src/**/*.svg']))
+        .pipe(src(['app/images/src/**/*.png', 'app/images/src/**/*.jpg']))
         .pipe(newer('app/images/dist'))
         .pipe(imagemin())
 
         .pipe(dest('app/images/dist/'));
 }
 
-function sprite() {
-    return src('app/images/dist/*.svg')
+function spriteStack() {
+    return src('app/images/src/stack/*.svg')
+        .pipe(svgmin())
         .pipe(svgSprite({
             mode: {
                 stack: {
-                    sprite: '../sprite.svg',
+                    sprite: '../sprite-stack.svg',
+                    example: true
+                }
+            }
+        }))
+        .pipe(dest('app/images/dist'));
+}
+
+function spriteSymbol() {
+    return src('app/images/src/symbol/*.svg')
+        .pipe(svgmin({
+            js2svg: {
+                pretty: true
+            }
+        }))
+        .pipe(cheerio({
+            run: function ($) {
+                $('[fill]').removeAttr('fill');
+                $('[stroke]').removeAttr('stroke');
+                $('[style]').removeAttr('style');
+            },
+            parserOptions: { xmlMode: true }
+        }))
+        .pipe(replace('&gt;', '>'))
+        .pipe(svgSprite({
+            mode: {
+                symbol: {
+                    sprite: '../sprite-symbol.svg',
                     example: true
                 }
             }
@@ -117,7 +148,8 @@ exports.scripts = scripts;
 exports.images = images;
 exports.watching = watching;
 
-exports.sprite = sprite;
+exports.spriteStack = spriteStack;
+exports.spriteSymbol = spriteSymbol;
 exports.fonts = fonts;
 exports.build = series(cleanDist, building, removeStackFolder);
 

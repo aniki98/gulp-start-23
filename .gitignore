@@ -7,4 +7,3 @@ build/
 node_modules/
 npm-debug.*
 package-lock.json
-app/css/*
