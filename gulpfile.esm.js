@@ -40,19 +40,26 @@ function scripts() {
 }
 
 function images() {
-    return src(['app/images/src/**/*.png', 'app/images/src/**/*.jpg'])
-        .pipe(newer('app/images/dist'))
+    return src(['app/images/src/reg/**/*.png', 'app/images/src/reg/**/*.jpg', '!app/images/src/bg/**'])
+        .pipe(newer('app/images/dist/reg'))
         .pipe(gulpAvif({quality: 75}))
 
-        .pipe(src(['app/images/src/**/*.png', 'app/images/src/**/*.jpg']))
-        .pipe(newer('app/images/dist'))
+        .pipe(src(['app/images/src/reg/**/*.png', 'app/images/src/reg/**/*.jpg']))
+        .pipe(newer('app/images/dist/reg'))
         .pipe(webp({quality: 75}))
 
-        .pipe(src(['app/images/src/**/*.png', 'app/images/src/**/*.jpg']))
-        .pipe(newer('app/images/dist'))
+        .pipe(src(['app/images/src/reg/**/*.png', 'app/images/src/reg/**/*.jpg']))
+        .pipe(newer('app/images/dist/reg'))
         .pipe(imagemin())
 
-        .pipe(dest('app/images/dist/'));
+        .pipe(dest('app/images/dist/reg'));
+}
+
+function minifyBgImages(){
+    return src('app/images/src/bg/*.*')
+    .pipe(newer('app/images/dist/bg'))
+    .pipe(imagemin())
+    .pipe(dest('app/images/dist/bg'))
 }
 
 function spriteStack() {
@@ -116,7 +123,8 @@ function watching() {
     });
     watch('app/scss/*.scss', styles);
     watch('app/js/main.js', scripts);
-    watch('app/images/src', images);
+    watch('app/images/src/reg/**', images);
+    watch('app/images/src/bg/**', minifyBgImages);
     watch('app/**/*.html').on('change', browserSync.reload);
 }
 
@@ -146,6 +154,7 @@ function removeStackFolder(){
 exports.styles = styles;
 exports.scripts = scripts;
 exports.images = images;
+exports.minifyBgImages = minifyBgImages;
 exports.watching = watching;
 
 exports.spriteStack = spriteStack;
@@ -153,4 +162,4 @@ exports.spriteSymbol = spriteSymbol;
 exports.fonts = fonts;
 exports.build = series(cleanDist, building, removeStackFolder);
 
-exports.default = parallel(styles, scripts, images, watching);
+exports.default = parallel(styles, scripts, images, minifyBgImages, watching);
